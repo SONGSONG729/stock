@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>stock</title>
+    <script src="jquery-3.3.1.js"></script>
+    <script src="echarts.js"></script>
+
+
+</head>
+<body>
+
+    <div>
+        <form action="" method="post">
+            <input type="text" id="gid">
+            <button type="button" id="search">search</button>
+        </form>
+    </div>
+    <div style="height: 50px;"></div>
+
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 90%;height:300px; text-align: center"></div>
+
+</body>
+
+<script>
+
+    $(function () {
+
+        var timeVal;
+        var nowPriVal;
+        var buyOnePriVal;
+        var buyTwoPriVal;
+        var sellOnePriVal;
+        var sellTwoPriVal;
+        var myChart = echarts.init(document.getElementById('main'));
+        var timeData = [];
+        var nowPriData = [];
+        var buyOnePriData = [];
+        var buyTwoPriData = [];
+        var sellOnePriData = [];
+        var sellTwoPriData = [];
+
+        function getStockData() {
+            var gid = $('#gid').val();
+            $.ajax({
+                type: "post",
+                url: "getData",
+                dataType: 'json',
+                data: {
+                    gid: gid
+                },
+                success: function (res) {
+                    console.log(res);
+                    // 接收聚合股票api传回来的json数据
+//                    nowPriVal = res.result[0].data.nowPri;
+//                    buyOnePriVal = res.result[0].data.buyOnePri;
+//                    buyTwoPriVal = res.result[0].data.buyTwoPri;
+//                    sellOnePriVal = res.result[0].data.sellOnePri;
+//                    sellTwoPriVal = res.result[0].data.sellTwoPriPri;
+//                    timeVal = res.result[0].data.time;
+                    // 接收新浪股票api传回来的json数据
+                    nowPriVal = res.nowPri;
+                    buyOnePriVal = res.buyOnePri;
+                    buyTwoPriVal = res.buyTwoPri;
+                    sellOnePriVal = res.sellOnePri;
+                    sellTwoPriVal = res.sellTwoPriPri;
+                    timeVal = res.time;
+
+                    nowPriData.push(nowPriVal);
+                    buyOnePriData.push(buyOnePriVal);
+                    buyTwoPriData.push(buyTwoPriVal);
+                    sellOnePriData.push(sellOnePriVal);
+                    sellTwoPriData.push(sellTwoPriVal);
+                    timeData.push(timeVal);
+
+                    myChart.setOption({
+                        title: {
+                            text: '股票实时价格'
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                        },
+                        legend: {
+                            type: 'scroll',
+                            data: ['当前价格', '', '买一报价', '买二报价', '卖一报价', '卖二报价']
+                        },
+                        xAxis:{
+                            data:timeData
+                        },
+                        yAxis:{},
+                        series: [
+                            {
+                                name: '当前价格',
+                                type:'line',
+                                data: nowPriData
+                            },
+                            {
+                                name: '买一报价',
+                                type:'line',
+                                data: buyOnePriData
+                            },
+                            {
+                                name: '买二报价',
+                                type:'line',
+                                data: buyTwoPriData
+                            },
+                            {
+                                name: '卖一报价',
+                                type:'line',
+                                data: sellOnePriData
+                            },
+                            {
+                                name: '卖二报价',
+                                type:'line',
+                                data: sellTwoPriData
+                            }
+                        ]
+                    });
+
+                }
+            });
+        }
+
+        $('#search').click(function(){
+            getStockData();
+            var  sh;
+            sh = setInterval(function () {
+                getStockData();
+
+            }, 5*1000);
+            setTimeout(function () {
+                clearInterval(sh);
+            },20*5*1000);
+        });
+
+    })
+
+</script>
+
+</html>
